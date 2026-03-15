@@ -3,51 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Kirin PDF Reader | GitHub Edition</title>
+    <title>Kirin PDF Reader | Local Mode</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
     <style>
-        /* Base & Layout */
-        body { margin: 0; padding: 0; background: #0f0f0f; color: #efefef; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+        body { margin: 0; padding: 0; background: #0f0f0f; color: #efefef; font-family: sans-serif; overflow: hidden; }
         #main-wrapper { display: flex; flex-direction: column; height: 100vh; }
 
-        /* Chrome Style Tab Bar */
+        /* Tab Bar */
         .tab-bar { background: #1a1a1a; display: flex; padding: 8px 5px 0 5px; gap: 4px; border-bottom: 1px solid #333; overflow-x: auto; align-items: flex-end; }
         .tab-bar::-webkit-scrollbar { display: none; }
 
         .tab { 
             background: #2b2b2b; color: #9aa0a6; padding: 8px 12px; border-radius: 8px 8px 0 0; 
-            font-size: 11px; cursor: pointer; min-width: 110px; flex-shrink: 0; 
+            font-size: 11px; cursor: pointer; min-width: 100px; flex-shrink: 0; 
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
             border: 1px solid transparent; transition: 0.2s; position: relative;
         }
         .tab.active { background: #000; color: #fff; border: 1px solid #333; border-bottom: 1px solid #000; margin-bottom: -1px; z-index: 2; }
 
-        .close-btn { 
-            font-size: 14px; font-weight: bold; opacity: 0.5; transition: 0.3s; 
-            padding: 2px 6px; border-radius: 4px; line-height: 1;
-        }
+        .close-btn { font-size: 14px; font-weight: bold; opacity: 0.5; transition: 0.3s; padding: 2px 6px; border-radius: 4px; line-height: 1; }
         .close-btn:hover { color: #fff; background: #ff3e3e; opacity: 1; }
 
-        .add-tab-btn { 
-            background: #333; color: #fff; border: none; padding: 5px 12px; 
-            margin-bottom: 5px; border-radius: 4px; cursor: pointer; font-size: 16px; margin-left: 5px;
-        }
+        .add-tab-btn { background: #333; color: #fff; border: none; padding: 5px 12px; margin-bottom: 5px; border-radius: 4px; cursor: pointer; font-size: 16px; margin-left: 5px; }
         .add-tab-btn:hover { background: #ff3e3e; }
 
-        /* Toolbar / Address Bar */
-        header { background: #35363a; padding: 8px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #202124; }
-        input#pdfUrl { flex: 1; background: #202124; border: 1px solid transparent; padding: 8px 12px; color: #fff; border-radius: 20px; outline: none; font-size: 13px; }
-        .btn-icon { background: none; border: none; color: #fff; cursor: pointer; font-size: 18px; padding: 5px; display: flex; align-items: center; }
+        /* Header (Hanya butang Folder) */
+        header { background: #35363a; padding: 10px; display: flex; justify-content: center; border-bottom: 1px solid #202124; }
+        .btn-folder { background: #ff3e3e; border: none; color: #fff; padding: 10px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; transition: 0.2s; }
+        .btn-folder:hover { background: #cc0000; transform: scale(1.05); }
 
-        /* Content Area (Manga Reader) */
+        /* Viewer Area */
         #content-area { flex: 1; background: #000; position: relative; overflow: hidden; }
         .slot { width: 100%; height: 100%; display: none; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 0; }
         .slot.active { display: block; }
 
         canvas { display: block; margin: 0 auto 15px auto; max-width: 95%; height: auto !important; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
-        .empty-view { display: flex; align-items: center; justify-content: center; height: 100%; color: #444; font-size: 12px; text-align:center; }
+        .empty-view { display: flex; align-items: center; justify-content: center; height: 100%; color: #444; font-size: 13px; text-align:center; flex-direction: column; gap: 10px; }
         
-        /* Desktop Scrollbar Custom */
         @media (min-width: 1024px) {
             .slot::-webkit-scrollbar { width: 8px; background-color: #0f0f0f; }
             .slot::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
@@ -61,14 +53,14 @@
 
 <div id="main-wrapper">
     <div class="tab-bar" id="tabBar">
-        <button class="add-tab-btn" onclick="addNewTab()" title="Add Tab">+</button>
+        <button class="add-tab-btn" onclick="addNewTab()">+</button>
     </div>
 
     <header>
-        <input id="pdfUrl" placeholder="Paste PDF Link (Google Drive/Direct)..." type="text">
-        <button class="btn-icon" onclick="loadOnlinePDF()" style="color:#8ab4f8" title="Load Link">&#10148;</button>
         <input accept=".pdf" id="localFile" onchange="loadLocalPDF(this)" style="display:none" type="file">
-        <button class="btn-icon" onclick="document.getElementById('localFile').click()" title="Open Local PDF">📁</button>
+        <button class="btn-folder" onclick="document.getElementById('localFile').click()">
+            <span>📁 Buka PDF</span>
+        </button>
     </header>
 
     <div id="content-area">
@@ -86,12 +78,10 @@
 
     function addNewTab() {
         if (tabs.length >= 10) return;
-        
         tabCounter++;
         const id = tabCounter;
         tabs.push(id);
 
-        // UI Tab
         const tabEl = document.createElement('div');
         tabEl.className = 'tab';
         tabEl.id = `tab-${id}`;
@@ -101,11 +91,10 @@
         const tabBar = document.getElementById('tabBar');
         tabBar.insertBefore(tabEl, tabBar.lastElementChild);
 
-        // UI Slot
         const slotEl = document.createElement('div');
         slotEl.className = 'slot';
         slotEl.id = `slot-${id}`;
-        slotEl.innerHTML = `<div class="empty-view">Tab ${id} Kosong<br>Guna butang Folder untuk HP</div>`;
+        slotEl.innerHTML = `<div class="empty-view">Sila klik butang 📁 di atas<br>untuk memuatkan PDF dalam Tab ${id}</div>`;
         document.getElementById('content-area').appendChild(slotEl);
 
         switchTab(id);
@@ -115,7 +104,6 @@
         currentTabId = id;
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
-
         document.getElementById(`tab-${id}`).classList.add('active');
         document.getElementById(`slot-${id}`).classList.add('active');
     }
@@ -123,11 +111,9 @@
     function closeTab(id, event) {
         event.stopPropagation();
         if (tabs.length <= 1) return;
-
         tabs = tabs.filter(t => t !== id);
         document.getElementById(`tab-${id}`).remove();
         document.getElementById(`slot-${id}`).remove();
-
         if (currentTabId === id) {
             switchTab(tabs[tabs.length - 1]);
         }
@@ -152,29 +138,10 @@
                 slot.appendChild(canvas);
             }
         } catch (e) {
-            slot.innerHTML = `<div class="empty-view" style="color:#ff3e3e">Error: Tidak dapat render PDF.</div>`;
+            slot.innerHTML = `<div class="empty-view" style="color:#ff3e3e">Gagal render. Sila cuba file lain.</div>`;
         }
         loader.style.display = 'none';
     }
-
-    function loadOnlinePDF() {
-    let url = document.getElementById('pdfUrl').value.trim();
-    if (!url || !currentTabId) return;
-
-    // Logik Auto-Convert Link Google Drive
-    if (url.includes("drive.google.com")) {
-        let parts = url.split('/d/');
-        if (parts.length > 1) {
-            let fileId = parts[1].split('/')[0];
-            // Tukar jadi direct link yang boleh di-render
-            url = "https://docs.google.com/uc?export=download&id=" + fileId;
-        }
-    }
-
-    renderPDF(url, currentTabId);
-    document.getElementById(`title-${currentTabId}`).innerText = "Drive PDF";
-    document.getElementById('pdfUrl').value = '';
-}
 
     function loadLocalPDF(input) {
         if (input.files && input.files[0] && currentTabId) {
@@ -184,16 +151,14 @@
             reader.onload = function() {
                 const data = new Uint8Array(this.result);
                 renderPDF(data, targetId);
-                document.getElementById(`title-${targetId}`).innerText = file.name.substring(0,8);
+                document.getElementById(`title-${targetId}`).innerText = file.name.substring(0,10);
             };
             reader.readAsArrayBuffer(file);
             input.value = '';
         }
     }
 
-    // Auto-start first tab
     addNewTab();
 </script>
-
 </body>
 </html>
