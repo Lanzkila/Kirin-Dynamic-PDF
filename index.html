@@ -158,12 +158,23 @@
     }
 
     function loadOnlinePDF() {
-        const url = document.getElementById('pdfUrl').value.trim();
-        if (!url || !currentTabId) return;
-        renderPDF(url, currentTabId);
-        document.getElementById(`title-${currentTabId}`).innerText = "Online PDF";
-        document.getElementById('pdfUrl').value = '';
+    let url = document.getElementById('pdfUrl').value.trim();
+    if (!url || !currentTabId) return;
+
+    // Logik Auto-Convert Link Google Drive
+    if (url.includes("drive.google.com")) {
+        let parts = url.split('/d/');
+        if (parts.length > 1) {
+            let fileId = parts[1].split('/')[0];
+            // Tukar jadi direct link yang boleh di-render
+            url = "https://docs.google.com/uc?export=download&id=" + fileId;
+        }
     }
+
+    renderPDF(url, currentTabId);
+    document.getElementById(`title-${currentTabId}`).innerText = "Drive PDF";
+    document.getElementById('pdfUrl').value = '';
+}
 
     function loadLocalPDF(input) {
         if (input.files && input.files[0] && currentTabId) {
